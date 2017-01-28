@@ -1,3 +1,4 @@
+//Constructor
 function LifeGame(canvasId, squareSize) {
     var that = this;
     this.squareSize = squareSize;
@@ -52,6 +53,7 @@ function LifeGame(canvasId, squareSize) {
         }
     }
 
+    //----------- setup mouse interactions -------------
     this.lastQ = null;
     this.mouseDown = false;
     this.lastUp = null;
@@ -78,8 +80,10 @@ function LifeGame(canvasId, squareSize) {
             that.updateCell(cell.x,cell.y,!that.matrix[cell.x][cell.y]);
         that.lastUp = null;
     });
+    //--------------------------------------------------
 }
 
+//draw cell with "val" (boolean) content
 LifeGame.prototype.updateCell = function(x,y, val) {
     if(typeof val == 'undefined') {
         val = !this.matrix[x][y];
@@ -123,6 +127,7 @@ LifeGame.prototype.getCellFromScreenCoordinates = function(screenX,screenY) {
     return null;
 };
 
+//animate as quickly as possible
 LifeGame.prototype.startAnimation = function() {
     var that = this;
 
@@ -156,6 +161,7 @@ LifeGame.prototype.startAnimation = function() {
     window.requestAnimationFrame(step);*/
 };
 
+//setup benchmark behaviour and start it
 LifeGame.prototype.startBenchmark = function() {
     var beginX = Math.ceil(this.COLS/2);
     var beginY = Math.ceil(this.ROWS/2);
@@ -172,6 +178,7 @@ LifeGame.prototype.startBenchmark = function() {
     this.onBenchmark = true;
 };
 
+//stop benchmark and give score result
 LifeGame.prototype.endBenchmark = function() {
     this.finalDate = Date.now();
     this.stopAnimation();
@@ -179,12 +186,14 @@ LifeGame.prototype.endBenchmark = function() {
     alert("Benchmark Result:" + Math.round(300*(this.ROWS*this.COLS)/((this.finalDate-this.initialDate)/1000)));
 };
 
+//pause life execution
 LifeGame.prototype.pauseAnimation = function() {
     this.isPaused = true;
     clearInterval(this.loopInterval);
     this.animationTrigger = false;
 };
 
+//stop life execution (reset to initial behaviour)
 LifeGame.prototype.stopAnimation = function() {
     this.isPaused = false;
     clearInterval(this.loopInterval);
@@ -194,6 +203,7 @@ LifeGame.prototype.stopAnimation = function() {
     this.currentIteration = 0;
 };
 
+//save current information data
 LifeGame.prototype.saveBehaviour = function() {
     for(var i = 0; i < this.COLS; i++) {
         for(var j = 0; j < this.ROWS; j++) {
@@ -202,6 +212,7 @@ LifeGame.prototype.saveBehaviour = function() {
     }
 };
 
+//load saved information data
 LifeGame.prototype.loadSavedBehaviour = function() {
     for(var i = 0; i < this.COLS; i++) {
         for(var j = 0; j < this.ROWS; j++) {
@@ -210,6 +221,7 @@ LifeGame.prototype.loadSavedBehaviour = function() {
     }
 };
 
+//reset Life behaviour
 LifeGame.prototype.reset = function() {
     this.stopAnimation();
     for(var i = 0; i < this.COLS; i++) {
@@ -222,6 +234,7 @@ LifeGame.prototype.reset = function() {
     this.currentIteration = 0;
 };
 
+//reset buffer matrix
 LifeGame.prototype.emptyBuffer = function() {
     for(var i = 0; i < this.COLS; i++) {
         for(var j = 0; j < this.ROWS; j++) {
@@ -231,7 +244,7 @@ LifeGame.prototype.emptyBuffer = function() {
     this.currentIteration = 0;
 };
 
-
+//move support matrix content to main buffer matrix
 LifeGame.prototype.copySupportMatrix = function() {
     this.smartCellValue = true;
     this.visualMatrix.setContextColor(gradient[1]);
@@ -253,6 +266,7 @@ LifeGame.prototype.copySupportMatrix = function() {
     }
 };
 
+//main Life cycle algorithm
 LifeGame.prototype.updateLifeLoop = function() {
     for(var i = 0; i < this.COLS; i++) {
         for(var j = 0; j < this.ROWS; j++) {
@@ -270,6 +284,7 @@ LifeGame.prototype.updateLifeLoop = function() {
     this.copySupportMatrix();
 };
 
+//support function to update adjacent cells by a given coordinate
 LifeGame.prototype.getAdjacentCells = function(x,y) {
     var array = [];
     for(var i = x-1; i <= x+1; i++) {
@@ -282,6 +297,7 @@ LifeGame.prototype.getAdjacentCells = function(x,y) {
     return array;
 };
 
+//get number of alive cells in a given array
 LifeGame.prototype.countAliveCells = function(array) {
     var count = 0;
     for(var i = 0; i < array.length; i++) {
@@ -291,6 +307,7 @@ LifeGame.prototype.countAliveCells = function(array) {
     return count;
 };
 
+//update graphics with the latest calculated data
 LifeGame.prototype.updateGraphics = function() {
     var square;
     this.visualMatrix.setContextColor(gradient[1]);
