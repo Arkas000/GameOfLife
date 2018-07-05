@@ -10,6 +10,8 @@ function LifeGame(canvasId, squareSize) {
 
     this.currentIteration = 0;
 
+    this.timeSpeed = 4;
+
     this.COLS = this.visualMatrix.squares.length;
     this.ROWS = this.visualMatrix.squares[0].length;
 
@@ -68,7 +70,7 @@ function LifeGame(canvasId, squareSize) {
         if(that.mouseDown) {
             var cell = that.getCellFromScreenCoordinates(e.clientX,e.clientY);
             if(that.lastQ && !(cell.x == that.lastQ.x && cell.y == that.lastQ.y))
-                that.updateCell(cell.x,cell.y);
+                that.updateCell(cell.x, cell.y);
 
             that.lastQ = cell;
             that.lastUp = cell;
@@ -96,14 +98,13 @@ LifeGame.prototype.updateCell = function(x,y, val) {
         } else {
             (this.visualMatrix.getSquare(x,y)).paint(gradient[0]);
         }
-
     }
 };
 
 LifeGame.prototype.updateCellSmart = function(x,y) {
     if(this.matrix[x] && typeof this.matrix[x][y] != 'undefined' && this.matrix[x][y] != this.smartCellValue) {
         this.matrix[x][y] = this.smartCellValue;
-        //(this.visualMatrix.getSquare(x,y)).paint();
+        (this.visualMatrix.getSquare(x,y)).paint();
     }
 };
 
@@ -127,7 +128,8 @@ LifeGame.prototype.getCellFromScreenCoordinates = function(screenX,screenY) {
     return null;
 };
 
-//animate as quickly as possible
+var lastTimeSpeed = this.timeSpeed;
+//animate as quickly as possible. It could be better by updating the UI just 30~60times per second, but it would create some glitches
 LifeGame.prototype.startAnimation = function() {
     var that = this;
 
@@ -141,49 +143,11 @@ LifeGame.prototype.startAnimation = function() {
     this.loopInterval = setInterval(function(){
         that.updateLifeLoop();
         that.currentIteration++;
-        if(that.onBenchmark && that.currentIteration == 300) {
-            that.endBenchmark();
+
+        if(that.timeSpeed != lastTimeSpeed) {
+            that.startAnimation();
         }
-        if(Date.now() - lastDate > 20) {
-            lastDate = Date.now();
-            that.updateGraphics();
-        }
-    },1);
-
-    /*function step() {
-        //that.updateLifeLoop();
-        that.updateGraphics();
-        if (that.animationTrigger) {
-            window.requestAnimationFrame(step);
-        }
-    }
-
-    window.requestAnimationFrame(step);*/
-};
-
-//setup benchmark behaviour and start it
-LifeGame.prototype.startBenchmark = function() {
-    var beginX = Math.ceil(this.COLS/2);
-    var beginY = Math.ceil(this.ROWS/2);
-    this.reset();
-    this.updateCell(beginX,beginY,true);
-    this.updateCell(beginX+1,beginY,true);
-    this.updateCell(beginX+1,beginY-2,true);
-    this.updateCell(beginX+3,beginY-1,true);
-    this.updateCell(beginX+4,beginY,true);
-    this.updateCell(beginX+5,beginY,true);
-    this.updateCell(beginX+6,beginY,true);
-    this.initialDate = Date.now();
-    this.startAnimation();
-    this.onBenchmark = true;
-};
-
-//stop benchmark and give score result
-LifeGame.prototype.endBenchmark = function() {
-    this.finalDate = Date.now();
-    this.stopAnimation();
-    this.onBenchmark = false;
-    alert("Benchmark Result:" + Math.round(300*(this.ROWS*this.COLS)/((this.finalDate-this.initialDate)/1000)));
+    },1000./this.timeSpeed);
 };
 
 //pause life execution
@@ -201,6 +165,22 @@ LifeGame.prototype.stopAnimation = function() {
     this.loadSavedBehaviour();
     this.emptyBuffer();
     this.currentIteration = 0;
+};
+
+//increase life execution speed *2
+LifeGame.prototype.increaseSpeed = function() {
+    this.timeSpeed *= 2;
+    if(this.timeSpeed > 4096) {
+        this.timeSpeed = 4096;
+    }
+};
+
+//decrease life execution speed /2
+LifeGame.prototype.decreaseSpeed = function() {
+    this.timeSpeed /= 2;
+    if(this.timeSpeed < 0.25) {
+        this.timeSpeed = 0.25;
+    }
 };
 
 //save current information data
@@ -309,22 +289,16 @@ LifeGame.prototype.countAliveCells = function(array) {
 
 //update graphics with the latest calculated data
 LifeGame.prototype.updateGraphics = function() {
-    var square;
-    this.visualMatrix.setContextColor(gradient[1]);
+    var square;   
     for(var i = 0; i < this.COLS; i++) {
         for(var j = 0; j < this.ROWS; j++) {
             square = this.visualMatrix.getSquare(i,j);
-            if(this.matrix[i][j] && this.drawStatusMatrix[i][j] != this.matrix[i][j]) {
-                square.paint();
-                this.drawStatusMatrix[i][j] = this.matrix[i][j];
-            }
-        }
-    }
-    this.visualMatrix.setContextColor(gradient[0]);
-    for(i = 0; i < this.COLS; i++) {
-        for(j = 0; j < this.ROWS; j++) {
-            square = this.visualMatrix.getSquare(i,j);
-            if(!this.matrix[i][j] && this.drawStatusMatrix[i][j] != this.matrix[i][j]) {
+            if(this.drawStatusMatrix[i][j] != this.matrix[i][j]) {
+                if(this.matrix[i][j]) {
+                    this.visualMatrix.setContextColor(gradient[1]);
+                } else {
+                    this.visualMatrix.setContextColor(gradient[0]);
+                }
                 square.paint();
                 this.drawStatusMatrix[i][j] = this.matrix[i][j];
             }

@@ -28,10 +28,13 @@ $("#reset").click(function() {
     $('#pause').css('display','none');
     $('#stop').css('display','none');
 });
-//benchmark button
-$("#benchmark").click(function() {
-    $('#start').css('display','none');
-    $('#pause').css('display','none');
-    $('#stop').css('display','initial');
-    life.startBenchmark();
+//speedUp button
+$("#speedup").click(function() {
+    life.increaseSpeed();
+    $('#speed').html(life.timeSpeed);
+});
+//speedDown button
+$("#speeddown").click(function() {
+    life.decreaseSpeed();
+    $('#speed').html(life.timeSpeed);
 });
